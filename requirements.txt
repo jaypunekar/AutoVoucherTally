@@ -1,4 +1,0 @@
-pandas
-pymongo[srv]
-customtkinter
-CTkMessagebox
