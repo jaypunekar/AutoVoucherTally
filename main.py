@@ -52,7 +52,7 @@ class UpdateFrame(customtkinter.CTkFrame):
 class ButtonFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self.update_button = customtkinter.CTkButton(self, text="View", command=self.update_selected)
+        self.update_button = customtkinter.CTkButton(self, text="View")
         self.update_button.pack(pady=10)
         self.update_button = customtkinter.CTkButton(self, text="Delete")
         self.update_button.pack(pady=10)
