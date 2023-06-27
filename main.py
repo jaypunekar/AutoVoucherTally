@@ -5,6 +5,7 @@ from tkinter import ttk
 from datetime import datetime
 import pandas as pd
 from PIL import Image
+import requests
 
 
 # MongoDB Atlas URL
