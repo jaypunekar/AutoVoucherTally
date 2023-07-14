@@ -101,14 +101,14 @@ class ButtonFrame(customtkinter.CTkFrame):
 class MyFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self.df = pd.DataFrame(columns=["Department", "Date_time", "Resort Name", "Person Name", "Amount", "Payment_type", "Approved", "Paid"])
+        self.df = pd.DataFrame(columns=["Department", "Date_time", "Client Name", "Person Name", "Amount", "Payment_to", "Approved", "Paid"])
         self.order = True
 
         try:
             for one_collec in collec.find():
-                self.df.loc[len(self.df.index)] = [one_collec["Department"], one_collec["Date_time"], one_collec["Resort Name"], one_collec["Person Name"], one_collec["Amount"], one_collec["Payment_type"], one_collec["Approved"], one_collec["Paid"]]
+                self.df.loc[len(self.df.index)] = [one_collec["Department"], one_collec["Date_time"], one_collec["Client Name"], one_collec["Person Name"], one_collec["Amount"], one_collec["Payment_to"], one_collec["Approved"], one_collec["Paid"]]
         except Exception:
-            CTkMessagebox(title="Error", message=Exception)
+            CTkMessagebox(title="Error", message="There is a error in MyFrame")
 
         self.display_data(self.df)
         # self.my_tree.pack(pady=10)
