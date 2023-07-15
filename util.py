@@ -99,11 +99,61 @@ class ButtonFrame(customtkinter.CTkFrame):
         self.update_button.pack(pady=10)
         self.update_button = customtkinter.CTkButton(self, text="Check Resort")
         self.update_button.pack(pady=10)
-        self.update_button = customtkinter.CTkButton(self, text="Add to Tally", fg_color='red')
+        self.update_button = customtkinter.CTkButton(self, text="Add to Tally", fg_color='red', command=self.integrate_in_tally)
         self.update_button.pack(pady=100)
 
         self.update_window = None
-    
+
+    # This function will integrate all the "Approved" & "Paid" Voucher to Tally
+    def integrate_in_tally(self):
+        self.client_name = "Name"
+        self.paymant_from = "Bank Name"
+        self.date_time = "Date & Time"
+        
+        #Tally server Runs on localhost:9000 by default
+        self.url = "http://localhost:9000/"
+
+        self.xmlBody = f"""<ENVELOPE>
+            <HEADER>
+                <VERSION>1</VERSION>
+                <TALLYREQUEST>Import</TALLYREQUEST>
+                <TYPE>Data</TYPE>
+                <ID>Vouchers</ID>
+            </HEADER>
+            <BODY>
+                <DESC>
+                    <STATICVARIABLES>
+                        <IMPORTDUPS>@@DUPCOMBINE</IMPORTDUPS>
+                        </STATICVARIABLES>
+                </DESC>
+                <DATA>
+                    <TALLYMESSAGE>
+                        <VOUCHER>
+                            <DATE>20230701</DATE>
+                            <NARRATION>Ch. No. Tested</NARRATION>
+                            <VOUCHERTYPENAME>Payment</VOUCHERTYPENAME>
+                            <VOUCHERNUMBER>1</VOUCHERNUMBER>
+                            <ALLLEDGERENTRIES.LIST>
+                                <LEDGERNAME>{self.client_name}</LEDGERNAME>
+                                <ISDEEMEDPOSITIVE>Yes</ISDEEMEDPOSITIVE>
+                                <AMOUNT>10000.00</AMOUNT>
+                            </ALLLEDGERENTRIES.LIST>
+                            <ALLLEDGERENTRIES.LIST>
+                                <LEDGERNAME>{self.payment_from}</LEDGERNAME>
+                                <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>
+                                <AMOUNT>-10000.00</AMOUNT>
+                            </ALLLEDGERENTRIES.LIST>
+                        </VOUCHER>
+                    </TALLYMESSAGE>
+                </DATA>
+            </BODY>
+        </ENVELOPE>"""
+
+        self.req = requests.post(url=self.url, data=self.xmlBody)
+
+        self.res = self.req.text.strip()
+        responseXML = Et.fromstring(self.res)
+
     def view_selected(self):
         try:
             x = trv.selection()
