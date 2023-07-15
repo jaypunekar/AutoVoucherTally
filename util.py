@@ -70,7 +70,7 @@ class UpdateFrame(customtkinter.CTkFrame):
         try:
             selected_voucher = collec.find_one({"Client Name": str(client_name), "Amount": str(amount), "Reason": str(reason)})
             collec.delete_one({"Client Name": str(client_name), "Amount": str(amount), "Reason": str(reason)})
-            CTkMessagebox(title='Updated', message="The voucher is Succussfully Deleated!")
+            CTkMessagebox(title='Updated', message="The voucher is Succussfully Deleated! (Restart the Program to See the Changes)")
         except Exception:
             CTkMessagebox(title='Error', message="There was an error while deleating the voucher")
 
@@ -81,7 +81,7 @@ class UpdateFrame(customtkinter.CTkFrame):
             # print(collec.find_one({"Client Name": str(client_name), "Amount": str(amount), "Reason": str(reason)}))
             if payment_type is not '':
                 collec.update_one({"Client Name": str(client_name), "Amount": str(amount), "Reason": str(reason)}, {"$set": {"Payment_from": str(payment_type), "Approved": 1}})
-                CTkMessagebox(title='Updated', message="Payment Type has been Succussfully Updated")
+                CTkMessagebox(title='Updated', message="Payment Type has been Succussfully Updated and the Voucher has been Approved (Restart the program to see the changes)")
             else:
                 CTkMessagebox(title='Error', message="Please select a proper bank")
 
