@@ -21,6 +21,7 @@ client = MongoClient(mongo_url)
 db = client['Punekar']
 collec = db['Tally']
 
+
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()

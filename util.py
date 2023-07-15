@@ -8,7 +8,6 @@ from PIL import Image
 import requests
 import xml.etree.ElementTree as Et
 
-
 # Tally URL
 tally_url = "https://localhost:9000"
 
@@ -20,6 +19,7 @@ client = MongoClient(mongo_url)
 # Database Name and Collection Name
 db = client['Punekar']
 collec = db['Tally']
+
 
 class UpdateFrame(customtkinter.CTkFrame):
     def __init__(self, client_name, amount, reason, master, **kwargs):
@@ -60,18 +60,27 @@ class UpdateFrame(customtkinter.CTkFrame):
         self.textbox_reason.insert('end', self.reason)
         self.textbox_reason.place(relx=.15, rely=.45, anchor='nw')
 
-        self.button_save = customtkinter.CTkButton(self, text="Save")
+        self.button_save = customtkinter.CTkButton(self, text="Delete", command=lambda:self.delete_the_voucher(self.optionmenu.get(), self.client_name, self.amount, self.reason))
         self.button_save.place(relx=0.3, rely=0.90, anchor='s')
 
-        self.button_update = customtkinter.CTkButton(self, text="Update",command=lambda:self.update_bank_details(self.optionmenu.get(), self.client_name, self.amount, self.reason))
+        self.button_update = customtkinter.CTkButton(self, text="Approve",command=lambda:self.update_bank_details(self.optionmenu.get(), self.client_name, self.amount, self.reason))
         self.button_update.place(relx=0.7, rely=0.90, anchor='s')
+
+    def delete_the_voucher(self, payment_type, client_name, amount, reason):
+        try:
+            selected_voucher = collec.find_one({"Client Name": str(client_name), "Amount": str(amount), "Reason": str(reason)})
+            collec.delete_one({"Client Name": str(client_name), "Amount": str(amount), "Reason": str(reason)})
+            CTkMessagebox(title='Updated', message="The voucher is Succussfully Deleated!")
+        except Exception:
+            CTkMessagebox(title='Error', message="There was an error while deleating the voucher")
+
 
     def update_bank_details(self, payment_type, client_name, amount, reason):
         try:
             # Convert all the parameter to string so that 'find_one' function will understand
             # print(collec.find_one({"Client Name": str(client_name), "Amount": str(amount), "Reason": str(reason)}))
             if payment_type is not '':
-                collec.update_one({"Client Name": str(client_name), "Amount": str(amount), "Reason": str(reason)}, {"$set": {"Payment_from": str(payment_type)}})
+                collec.update_one({"Client Name": str(client_name), "Amount": str(amount), "Reason": str(reason)}, {"$set": {"Payment_from": str(payment_type), "Approved": 1}})
                 CTkMessagebox(title='Updated', message="Payment Type has been Succussfully Updated")
             else:
                 CTkMessagebox(title='Error', message="Please select a proper bank")
@@ -79,18 +88,12 @@ class UpdateFrame(customtkinter.CTkFrame):
 
         except Exception:
             CTkMessagebox(title='Error', message="There was an Error while updating")
-
-
-
+        
 
 class ButtonFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self.update_button = customtkinter.CTkButton(self, text="View", command=self.view_selected)
-        self.update_button.pack(pady=10)
-        self.update_button = customtkinter.CTkButton(self, text="Delete")
-        self.update_button.pack(pady=10)
-        self.update_button = customtkinter.CTkButton(self, text="Approve")
         self.update_button.pack(pady=10)
         self.update_button = customtkinter.CTkButton(self, text="Add Resort")
         self.update_button.pack(pady=10)
