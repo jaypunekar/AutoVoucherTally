@@ -6,6 +6,7 @@ from datetime import datetime
 import pandas as pd
 from PIL import Image
 import requests
+# etree makes it easier to process xml data
 import xml.etree.ElementTree as Et
 
 # Tally URL
@@ -99,81 +100,101 @@ class ButtonFrame(customtkinter.CTkFrame):
         self.update_button.pack(pady=10)
         self.update_button = customtkinter.CTkButton(self, text="Check Resort")
         self.update_button.pack(pady=10)
-        self.update_button = customtkinter.CTkButton(self, text="Add to Tally", fg_color='red', command=self.integrate_in_tally)
+        self.update_button = customtkinter.CTkButton(self, text="Add to Tally", fg_color='red', command=lambda: self.integrate_in_tally())
         self.update_button.pack(pady=100)
 
         self.update_window = None
 
     # This function will integrate all the "Approved" & "Paid" Voucher to Tally
-    def integrate_in_tally(self):
-        self.client_name = "Name"
-        self.paymant_from = "Bank Name"
-        self.date_time = "Date & Time"
-        
-        #Tally server Runs on localhost:9000 by default
-        self.url = "http://localhost:9000/"
-
-        self.xmlBody = f"""<ENVELOPE>
-            <HEADER>
-                <VERSION>1</VERSION>
-                <TALLYREQUEST>Import</TALLYREQUEST>
-                <TYPE>Data</TYPE>
-                <ID>Vouchers</ID>
-            </HEADER>
-            <BODY>
-                <DESC>
-                    <STATICVARIABLES>
-                        <IMPORTDUPS>@@DUPCOMBINE</IMPORTDUPS>
-                        </STATICVARIABLES>
-                </DESC>
-                <DATA>
-                    <TALLYMESSAGE>
-                        <VOUCHER>
-                            <DATE>20230701</DATE>
-                            <NARRATION>Ch. No. Tested</NARRATION>
-                            <VOUCHERTYPENAME>Payment</VOUCHERTYPENAME>
-                            <VOUCHERNUMBER>1</VOUCHERNUMBER>
-                            <ALLLEDGERENTRIES.LIST>
-                                <LEDGERNAME>{self.client_name}</LEDGERNAME>
-                                <ISDEEMEDPOSITIVE>Yes</ISDEEMEDPOSITIVE>
-                                <AMOUNT>10000.00</AMOUNT>
-                            </ALLLEDGERENTRIES.LIST>
-                            <ALLLEDGERENTRIES.LIST>
-                                <LEDGERNAME>{self.payment_from}</LEDGERNAME>
-                                <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>
-                                <AMOUNT>-10000.00</AMOUNT>
-                            </ALLLEDGERENTRIES.LIST>
-                        </VOUCHER>
-                    </TALLYMESSAGE>
-                </DATA>
-            </BODY>
-        </ENVELOPE>"""
-
-        self.req = requests.post(url=self.url, data=self.xmlBody)
-
-        self.res = self.req.text.strip()
-        responseXML = Et.fromstring(self.res)
 
     def view_selected(self):
         try:
             x = trv.selection()
+            print(x)
             self.update_window = customtkinter.CTkToplevel(self)
             self.update_window.geometry("637x637")
             self.update_window.focus()
             self.update_window.resizable(False, False)
 
             #Finding the data from MongoDB
-            selected_item = collec.find_one({'Department': trv.item(x)["values"][0], 'Date_time': trv.item(x)["values"][1], 'Client Name': trv.item(x)["values"][2]})
-
+            self.selected_item = collec.find_one({'Department': trv.item(x)["values"][0], 'Date_time': trv.item(x)["values"][1], 'Client Name': trv.item(x)["values"][2]})
 
 
             # Initializing class UpdateFrame
             # UpdateFrame class opens a toplevel frame with all the details in it
-            self.my_frame = UpdateFrame(master=self.update_window, client_name=trv.item(x)["values"][2], amount=trv.item(x)["values"][4], reason=selected_item['Reason'], height=600, width=600)
+            self.my_frame = UpdateFrame(master=self.update_window, client_name=trv.item(x)["values"][2], amount=trv.item(x)["values"][4], reason=self.selected_item['Reason'], height=600, width=600)
             self.my_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
         except Exception:
             print(Exception.__cause__)
             CTkMessagebox(title='Error', message="You haven't selected a row or there was an error in Database")
+
+
+    def integrate_in_tally(self):
+        # try:
+            all_items = collec.find({"Paid": 1, "Approved": 1, "Added_to_tally": 0})
+            #Tally server Runs on localhost:9000 by default
+            self.url = "http://localhost:9000/"
+
+            for items in all_items:
+                print(items["Reason"])
+
+            # for items in all_items:
+                self.xmlBody = f"""<ENVELOPE>
+                    <HEADER>
+                        <VERSION>1</VERSION>
+                        <TALLYREQUEST>Import</TALLYREQUEST>
+                        <TYPE>Data</TYPE>
+                        <ID>Vouchers</ID>
+                    </HEADER>
+                    <BODY>
+                        <DESC>
+                            <STATICVARIABLES>
+                                <IMPORTDUPS>@@DUPCOMBINE</IMPORTDUPS>
+                                </STATICVARIABLES>
+                        </DESC>
+                        <DATA>
+                            <TALLYMESSAGE>
+                                <VOUCHER>
+                                    <DATE>20230701</DATE>
+                                    <NARRATION>{items["Reason"]}</NARRATION>
+                                    <VOUCHERTYPENAME>Payment</VOUCHERTYPENAME>
+                                    <VOUCHERNUMBER>1</VOUCHERNUMBER>
+                                    <ALLLEDGERENTRIES.LIST>
+                                        <LEDGERNAME>Sneh Readsfsort</LEDGERNAME>
+                                        <ISDEEMEDPOSITIVE>Yes</ISDEEMEDPOSITIVE>
+                                        <AMOUNT>{int(items["Amount"])}</AMOUNT>
+                                    </ALLLEDGERENTRIES.LIST>
+                                    <ALLLEDGERENTRIES.LIST>
+                                        <LEDGERNAME>Indian Badnk</LEDGERNAME>
+                                        <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>
+                                        <AMOUNT>{-int(items["Amount"])}</AMOUNT>
+                                    </ALLLEDGERENTRIES.LIST>
+                                </VOUCHER>
+                            </TALLYMESSAGE>
+                        </DATA>
+                    </BODY>
+                </ENVELOPE>"""
+
+                self.req = requests.post(url=self.url, data=self.xmlBody)
+
+                self.res = self.req.text.strip()
+                responseXML = Et.fromstring(self.res)
+                # responseXML[1][0][0].text gives different error messages when there is a error
+                # therefore it is difficult to write all the errors
+                # But when there is a error a text show up in responseXML[1][0][0].text
+                # this text does not show up in a success message
+                # So the following code means if responseXML[1][0][0].text exist then give error message
+                try:
+                    if responseXML[1][0][0][0].text == "1":
+                        CTkMessagebox(title='Success', message="The all 'Paid' & 'Approved' vouchers have been successfully added to tally")
+                        collec.find_one_and_update({"Client Name":f'{items["Client Name"]}', "Reason": f'{items["Reason"]}', "Amount":f'{items["Amount"]}'}, {"$set": {"Added_to_tally": 1}})
+                    else:
+                        CTkMessagebox(title='Error', message="The Payment Method or the client does not exist in Tally yet. Please add it and try again.")
+                        print(type(responseXML[1][0][0][0].text))
+                except Exception:
+                        CTkMessagebox(title='Error', message="The Payment Method or the client does not exist in Tally yet. Please add it and try again.")
+            # except Exception:
+            #     CTkMessagebox(title='Error', message="Tally is not open in background")
 
 
 class MyFrame(customtkinter.CTkFrame):
