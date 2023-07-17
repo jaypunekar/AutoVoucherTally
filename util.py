@@ -12,63 +12,69 @@ import requests
 import xml.etree.ElementTree as Et
 from exception import TallyException
 
-# Tally URL
-tally_url = "https://localhost:9000"
+try:
+    # Tally URL
+    tally_url = "https://localhost:9000"
 
-# MongoDB Atlas URL
-mongo_url = "mongodb+srv://mongodb:mongodb@tally.i6wfrlt.mongodb.net/?retryWrites=true&w=majority"
+    # MongoDB Atlas URL
+    mongo_url = "mongodb+srv://mongodb:mongodb@tally.i6wfrlt.mongodb.net/?retryWrites=true&w=majority"
 
-client = MongoClient(mongo_url)
+    client = MongoClient(mongo_url)
 
-# Database Name and Collection Name
-db = client['Punekar']
-collec = db['Tally']
+    # Database Name and Collection Name
+    db = client['Punekar']
+    collec = db['Tally']
+except Exception as e:
+    raise TallyException(e, sys) from e
 
 
 class UpdateFrame(customtkinter.CTkFrame):
-    def __init__(self, client_name, amount, reason, master, **kwargs):
-        super().__init__(master, **kwargs)
-        self.client_name = client_name
-        self.amount = amount
-        self.reason = reason
+    try:
+        def __init__(self, client_name, amount, reason, master, **kwargs):
+            super().__init__(master, **kwargs)
+            self.client_name = client_name
+            self.amount = amount
+            self.reason = reason
 
-        self.label_heading = customtkinter.CTkLabel(self, text="Entered Details", font=('Monospace', 30), width=10, justify='center')
-        self.label_heading.place(relx=0.5, rely=0.1, anchor='n')
+            self.label_heading = customtkinter.CTkLabel(self, text="Entered Details", font=('Monospace', 30), width=10, justify='center')
+            self.label_heading.place(relx=0.5, rely=0.1, anchor='n')
 
-        self.label_name = customtkinter.CTkLabel(self, text="Resort Name:")
-        self.label_name.place(relx=0.15, rely=.2, anchor='nw')
-        self.entry_name = customtkinter.CTkEntry(self, placeholder_text=self.client_name, width=200)
-        self.entry_name.place(relx=.15, rely=.25, anchor='nw')
+            self.label_name = customtkinter.CTkLabel(self, text="Resort Name:")
+            self.label_name.place(relx=0.15, rely=.2, anchor='nw')
+            self.entry_name = customtkinter.CTkEntry(self, placeholder_text=self.client_name, width=200)
+            self.entry_name.place(relx=.15, rely=.25, anchor='nw')
 
-        # Dropdown menu for Types of Payment
-        self.payment_type = customtkinter.CTkLabel(self, text="Payment Type")
-        self.payment_type.place(relx=0.15, rely=.2, anchor='nw')
-        self.optionmenu = customtkinter.CTkOptionMenu(self ,values=['', 'Cash', 'Bank 1', 'Bank 2', 'Bank 3', 'Bank 4'])
+            # Dropdown menu for Types of Payment
+            self.payment_type = customtkinter.CTkLabel(self, text="Payment Type")
+            self.payment_type.place(relx=0.15, rely=.2, anchor='nw')
+            self.optionmenu = customtkinter.CTkOptionMenu(self ,values=['', 'Cash', 'Bank 1', 'Bank 2', 'Bank 3', 'Bank 4'])
 
-        # This code finds the currently selected
-        self.currently_selected = collec.find_one({"Client Name": str(client_name), "Amount": str(amount), "Reason": str(reason)})
-        if self.currently_selected['Payment_from']:   #if there is a payment type selected that preset the menu to that type or else show blank
-            self.optionmenu.set(self.currently_selected['Payment_from'])
-        else:
-            self.optionmenu.set('')
-        self.optionmenu.place(relx=.55, rely=.25, anchor='nw')
+            # This code finds the currently selected
+            self.currently_selected = collec.find_one({"Client Name": str(client_name), "Amount": str(amount), "Reason": str(reason)})
+            if self.currently_selected['Payment_from']:   #if there is a payment type selected that preset the menu to that type or else show blank
+                self.optionmenu.set(self.currently_selected['Payment_from'])
+            else:
+                self.optionmenu.set('')
+            self.optionmenu.place(relx=.55, rely=.25, anchor='nw')
 
-        self.label_amount = customtkinter.CTkLabel(self, text="Amount (Rs.)")
-        self.label_amount.place(relx=0.15, rely=.3, anchor='nw')
-        self.entry_amount = customtkinter.CTkEntry(self, placeholder_text=self.amount, width=140)
-        self.entry_amount.place(relx=.15, rely=.35, anchor='nw')
+            self.label_amount = customtkinter.CTkLabel(self, text="Amount (Rs.)")
+            self.label_amount.place(relx=0.15, rely=.3, anchor='nw')
+            self.entry_amount = customtkinter.CTkEntry(self, placeholder_text=self.amount, width=140)
+            self.entry_amount.place(relx=.15, rely=.35, anchor='nw')
 
-        self.label_reason = customtkinter.CTkLabel(self, text="Reason:")
-        self.label_reason.place(relx=0.15, rely=.4, anchor='nw')
-        self.textbox_reason = customtkinter.CTkTextbox(master=self, width=400, corner_radius=8)
-        self.textbox_reason.insert('end', self.reason)
-        self.textbox_reason.place(relx=.15, rely=.45, anchor='nw')
+            self.label_reason = customtkinter.CTkLabel(self, text="Reason:")
+            self.label_reason.place(relx=0.15, rely=.4, anchor='nw')
+            self.textbox_reason = customtkinter.CTkTextbox(master=self, width=400, corner_radius=8)
+            self.textbox_reason.insert('end', self.reason)
+            self.textbox_reason.place(relx=.15, rely=.45, anchor='nw')
 
-        self.button_save = customtkinter.CTkButton(self, text="Delete", command=lambda:self.delete_the_voucher(self.optionmenu.get(), self.client_name, self.amount, self.reason))
-        self.button_save.place(relx=0.3, rely=0.90, anchor='s')
+            self.button_save = customtkinter.CTkButton(self, text="Delete", command=lambda:self.delete_the_voucher(self.optionmenu.get(), self.client_name, self.amount, self.reason))
+            self.button_save.place(relx=0.3, rely=0.90, anchor='s')
 
-        self.button_update = customtkinter.CTkButton(self, text="Approve",command=lambda:self.update_bank_details(self.optionmenu.get(), self.client_name, self.amount, self.reason))
-        self.button_update.place(relx=0.7, rely=0.90, anchor='s')
+            self.button_update = customtkinter.CTkButton(self, text="Approve",command=lambda:self.update_bank_details(self.optionmenu.get(), self.client_name, self.amount, self.reason))
+            self.button_update.place(relx=0.7, rely=0.90, anchor='s')
+    except Exception as e:
+        raise TallyException(e, sys) from e
 
     def delete_the_voucher(self, payment_type, client_name, amount, reason):
         try:
@@ -97,20 +103,23 @@ class UpdateFrame(customtkinter.CTkFrame):
         
 
 class ButtonFrame(customtkinter.CTkFrame):
-    def __init__(self, master, **kwargs):
-        super().__init__(master, **kwargs)
-        self.update_button = customtkinter.CTkButton(self, text="View", command=self.view_selected)
-        self.update_button.pack(pady=10)
-        self.update_button = customtkinter.CTkButton(self, text="Add Resort")
-        self.update_button.pack(pady=10)
-        self.update_button = customtkinter.CTkButton(self, text="Check Resort")
-        self.update_button.pack(pady=10)
-        self.update_button = customtkinter.CTkButton(self, text="Add to Tally", fg_color='red', command=lambda: self.integrate_in_tally())
-        self.update_button.pack(pady=100)
+    try:
+        def __init__(self, master, **kwargs):
+            super().__init__(master, **kwargs)
+            self.update_button = customtkinter.CTkButton(self, text="View", command=self.view_selected)
+            self.update_button.pack(pady=10)
+            self.update_button = customtkinter.CTkButton(self, text="Add Resort")
+            self.update_button.pack(pady=10)
+            self.update_button = customtkinter.CTkButton(self, text="Check Resort")
+            self.update_button.pack(pady=10)
+            self.update_button = customtkinter.CTkButton(self, text="Add to Tally", fg_color='red', command=lambda: self.integrate_in_tally())
+            self.update_button.pack(pady=100)
 
-        self.update_window = None
+            self.update_window = None
 
-    # This function will integrate all the "Approved" & "Paid" Voucher to Tally
+        # This function will integrate all the "Approved" & "Paid" Voucher to Tally
+    except Exception as e:
+        raise TallyException(e, sys) from e
 
     def view_selected(self):
         try:
