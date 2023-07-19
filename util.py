@@ -90,7 +90,7 @@ class UpdateFrame(customtkinter.CTkFrame):
         try:
             # Convert all the parameter to string so that 'find_one' function will understand
             # print(collec.find_one({"Client Name": str(client_name), "Amount": str(amount), "Reason": str(reason)}))
-            if payment_type is not '':
+            if payment_type != '':
                 collec.update_one({"Client Name": str(client_name), "Amount": str(amount), "Reason": str(reason)}, {"$set": {"Payment_from": str(payment_type), "Approved": 1}})
                 CTkMessagebox(title='Updated', message="Payment Type has been Succussfully Updated and the Voucher has been Approved (Restart the program to see the changes)")
             else:
