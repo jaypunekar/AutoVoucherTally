@@ -128,7 +128,7 @@ There is also a helpful youtube video on the same by Software Codecs [Here](http
 2. [TallyAccounts](https://github.com/jaypunekar/TallyAccounts)
 3. [TallyMain](https://github.com/jaypunekar/AutoVoucherTally)
 
-You should have already run first two command if you followed [AutoVoucherTally Setup](#screenshots)
+You should have already run first two command if you followed [AutoVoucherTally Setup](#autovouchertally-setup)
 
 Clone the project:
 
