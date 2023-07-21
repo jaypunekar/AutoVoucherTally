@@ -3,6 +3,12 @@
 
 The AutoVoucherTally (also known as TallyMain) is a comprehensive solution designed to streamline and automate the voucher creation, approval, and payment process for businesses. It comprises three interconnected applications: TallyClient, TallyMain, and TallyAccounts, each serving a specific role in the end-to-end workflow. Ideally, three different computers are required with their respective app installed.
 
+### Softwares:
+
+1. [TallyClient](https://github.com/jaypunekar/TallyClient)
+2. [TallyAccounts](https://github.com/jaypunekar/TallyAccounts)
+3. [TallyMain](https://github.com/jaypunekar/AutoVoucherTally)
+   
 ## Contents
 
 - [Overview](#overview)
