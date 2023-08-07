@@ -148,7 +148,7 @@ Go to the project directory
   cd AutoVoucherTally
 ```
 
-Create conda virtual enviornment (This step in not necessory):
+Create conda virtual enviornment (This step in not necessory. Also, anaconda should be installed in your syetem for this to work):
 ```bash
 conda create -p venv python==3.7 -y
 ```
